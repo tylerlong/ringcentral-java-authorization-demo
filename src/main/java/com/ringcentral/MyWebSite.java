@@ -17,13 +17,13 @@ public class MyWebSite extends AbstractHandler
         throws IOException, ServletException
     {
         response.setStatus(HttpServletResponse.SC_OK);
-        response.setHeader("Validation-Token", request.getHeader("Validation-Token"));
-        if(request.getMethod() == "POST")
-        {
-            String body = request.getReader().lines().collect(java.util.stream.Collectors.joining(System.lineSeparator()));
-            System.out.println(body);
-            // do whatever with body
-        }
+        // response.setHeader("Validation-Token", request.getHeader("Validation-Token"));
+        // if(request.getMethod() == "POST")
+        // {
+        //     String body = request.getReader().lines().collect(java.util.stream.Collectors.joining(System.lineSeparator()));
+        //     System.out.println(body);
+        //     // do whatever with body
+        // }
         response.getWriter().println("OK");
         baseRequest.setHandled(true);
     }
