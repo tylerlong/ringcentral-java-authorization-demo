@@ -8,6 +8,8 @@ repositories {
 }
 
 dependencies {
+    compile 'com.ringcentral:ringcentral:1.0.0-beta10'
+    compile 'org.eclipse.jetty:jetty-server:9.4.19.v20190610'
 }
 
 mainClassName = 'com.ringcentral.MyWebSite'
