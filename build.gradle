@@ -4,12 +4,13 @@ plugins {
 }
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 dependencies {
-    compile 'com.ringcentral:ringcentral:1.0.0-beta13'
+    compile 'com.ringcentral:ringcentral:2.8.4'
     compile 'org.eclipse.jetty:jetty-server:9.4.19.v20190610'
+    compile 'com.google.code.gson:gson:2.9.0'
 }
 
 mainClassName = 'com.ringcentral.MyWebSite'

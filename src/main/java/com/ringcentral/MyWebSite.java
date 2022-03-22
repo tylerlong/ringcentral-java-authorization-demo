@@ -1,7 +1,5 @@
 package com.ringcentral;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.ringcentral.definitions.TokenInfo;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
@@ -16,9 +14,13 @@ import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.google.gson.Gson;
+
 public class MyWebSite extends AbstractHandler {
     private static String TOKEN_KEY = "rc-token";
     private static String REDIRECT_URI = "http://localhost:8080/oauth2callback";
+
+    private Gson gson = new Gson();
 
     public static void main(String[] args) throws Exception {
         Server server = new Server(8080);
@@ -35,6 +37,9 @@ public class MyWebSite extends AbstractHandler {
         baseRequest.setHandled(true);
 
         Cookie[] cookiesArray = request.getCookies();
+        if(cookiesArray == null) {
+          cookiesArray = new Cookie[0];
+        }
         List<Cookie> cookies = Arrays.asList(cookiesArray);
         List<Cookie> filteredCookies = cookies.stream().filter(c -> c.getName().equals(TOKEN_KEY)).collect(Collectors.toList());
         RestClient rc = new RestClient(
@@ -47,7 +52,7 @@ public class MyWebSite extends AbstractHandler {
             String base64String = filteredCookies.get(0).getValue();
             byte[] decodedBytes = Base64.getDecoder().decode(base64String);
             String tokenString = new String(decodedBytes);
-            rc.token = JSON.parseObject(tokenString, TokenInfo.class);
+            rc.token = gson.fromJson(tokenString, TokenInfo.class);
         } else if (!requestUri.equals("/oauth2callback")) {
             response.getWriter().println("<h2>RingCentral Authorization Code Flow Authentication</h2><a href=\"" + rc.authorizeUri(REDIRECT_URI) + "\">Login RingCentral Account</a>");
             return;
@@ -70,7 +75,7 @@ public class MyWebSite extends AbstractHandler {
                 } catch (RestException e) {
                     e.printStackTrace();
                 }
-                String base64String = Base64.getEncoder().encodeToString(JSON.toJSONString(rc.token).getBytes());
+                String base64String = Base64.getEncoder().encodeToString(gson.toJson(rc.token).getBytes());
                 Cookie cookie2 = new Cookie(TOKEN_KEY, base64String);
                 cookie2.setMaxAge(999999999);
                 response.addCookie(cookie2);
@@ -79,16 +84,20 @@ public class MyWebSite extends AbstractHandler {
             case "/test":
                 String api = request.getParameter("api");
                 String result = "";
-                switch (api) {
-                    case "extension":
-                        result = JSON.toJSONString(rc.restapi().account().extension().list(), SerializerFeature.PrettyFormat);
-                        break;
-                    case "extension-call-log":
-                        result = JSON.toJSONString(rc.restapi().account().extension().calllog().list(), SerializerFeature.PrettyFormat);
-                        break;
-                    case "account-call-log":
-                        result = JSON.toJSONString(rc.restapi().account().calllog().list(), SerializerFeature.PrettyFormat);
-                        break;
+                try{
+                    switch (api) {
+                        case "extension":
+                            result = gson.toJson(rc.restapi().account().extension().list());
+                            break;
+                        case "extension-call-log":
+                            result = gson.toJson(rc.restapi().account().extension().callLog().list());
+                            break;
+                        case "account-call-log":
+                            result = gson.toJson(rc.restapi().account().callLog().list());
+                            break;
+                    }
+                }catch(RestException re) {
+
                 }
 
                 response.getWriter().println("<pre>" + result + "</pre>");
